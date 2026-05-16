@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: zap-mesa_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: zap-mesa
+      POSTGRES_PASSWORD: zap-mesa-password
+      POSTGRES_DB: zap-mesa
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: zap-mesa-backend
+    restart: always
+    ports:
+      - "3333:3333"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    container_name: zap-mesa-frontend
+    restart: always
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
