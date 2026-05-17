@@ -4,6 +4,7 @@ import express from "express";
 import http from "http";
 import { apiRateLimiter } from "./middlewares/rate-limit.middleware.js";
 import { router } from "./routes/index.js";
+import { startBillingAutomationScheduler } from "./utils/billing-automation.js";
 import { initSocket } from "./websocket/socket.js";
 
 const app = express();
@@ -19,4 +20,10 @@ initSocket(httpServer);
 
 httpServer.listen(port, () => {
   console.log(`API running on port ${port}`);
+
+  const billingAutomationEnabled = process.env["BILLING_AUTOMATION_ENABLED"] !== "false";
+  if (billingAutomationEnabled) {
+    startBillingAutomationScheduler();
+    console.log("Billing automation scheduler enabled");
+  }
 });

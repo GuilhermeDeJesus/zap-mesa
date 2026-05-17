@@ -9,6 +9,22 @@ import {
 
 export const restaurantRoutes = Router();
 
+async function reconcileRestaurantSubscription(restaurantId: string) {
+  const pendingOrOverdue = await prisma.invoice.count({
+    where: {
+      restaurantId,
+      status: { in: ["pending", "overdue"] },
+    },
+  });
+
+  if (pendingOrOverdue === 0) {
+    await prisma.subscription.updateMany({
+      where: { restaurantId },
+      data: { status: "active" },
+    });
+  }
+}
+
 function normalizePublicUrl(rawValue: string | undefined, fallback: string): string {
   const candidate = (rawValue || "").trim();
   if (!candidate) return fallback;
@@ -301,21 +317,42 @@ restaurantRoutes.patch("/billing/invoices/:invoiceId/pay", async (req, res) => {
     },
   });
 
-  const pendingOrOverdue = await prisma.invoice.count({
-    where: {
-      restaurantId,
-      status: { in: ["pending", "overdue"] },
-    },
-  });
-
-  if (pendingOrOverdue === 0) {
-    await prisma.subscription.updateMany({
-      where: { restaurantId },
-      data: { status: "active" },
-    });
-  }
+  await reconcileRestaurantSubscription(restaurantId);
 
   return res.json({ message: "Pagamento registrado com sucesso", invoice: paidInvoice });
+});
+
+// DELETE /restaurant/billing/invoices/:invoiceId - excluir fatura do restaurante logado
+restaurantRoutes.delete("/billing/invoices/:invoiceId", async (req, res) => {
+  const restaurantId = req.user!.restaurantId;
+  const { invoiceId } = req.params;
+
+  try {
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+        restaurantId,
+      },
+    });
+
+    if (!invoice) {
+      return res.status(404).json({ message: "Fatura não encontrada" });
+    }
+
+    await prisma.invoice.delete({
+      where: { id: invoice.id },
+    });
+
+    await reconcileRestaurantSubscription(restaurantId);
+
+    return res.json({ message: "Fatura excluída com sucesso" });
+  } catch (error) {
+    console.error("Erro ao excluir fatura do restaurante:", error);
+    return res.status(500).json({
+      message: "Erro ao excluir fatura",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
 });
 
 // POST /restaurant/billing/invoices/:invoiceId/payment-intents/pix

@@ -1,5 +1,14 @@
 [
   {
+    "id": "hist_1779039941430_u3yeulck",
+    "createdAt": "2026-05-17T17:45:41.430Z",
+    "type": "connection_test",
+    "gateway": "mercadopago",
+    "ok": true,
+    "message": "Conexão com Mercado Pago validada com sucesso",
+    "actorEmail": "admin@zapmesa.com"
+  },
+  {
     "id": "hist_1779038690090_iyhpkfyo",
     "createdAt": "2026-05-17T17:24:50.090Z",
     "type": "connection_test",
