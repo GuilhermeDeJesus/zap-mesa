@@ -1,15 +1,35 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PLATFORM_OWNER
+  RESTAURANT_ADMIN
+  RESTAURANT_STAFF
+}
+
+enum SubscriptionStatus {
+  trial
+  active
+  past_due
+  suspended
+  canceled
+}
+
+enum InvoiceStatus {
+  pending
+  paid
+  overdue
+  canceled
+}
+
+enum BillingInterval {
+  monthly
 }
 
 model Restaurant {
@@ -17,19 +37,173 @@ model Restaurant {
   name      String
   slug      String   @unique
   phone     String?
+  logoUrl   String?
+  coverUrl  String?
+  description String?
+  instagram String?
+  whatsapp  String?
+  facebook  String?
+  customDomain String? @unique
   createdAt DateTime @default(now())
 
-  users User[]
+  users      User[]
+  auditLogs  AuditLog[]
+  subscription Subscription?
+  invoices   Invoice[]
+  categories Category[]
+  products   Product[]
+  tables     Table[]
+  orders     Order[]
 }
 
 model User {
-  id           String      @id @default(cuid())
+  id           String     @id @default(cuid())
   name         String
-  email        String      @unique
+  email        String     @unique
   password     String
+  role         UserRole   @default(RESTAURANT_ADMIN)
+  restaurantId String?
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
 
+model AuditLog {
+  id           String   @id @default(cuid())
   restaurantId String
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  actorId      String?
+  actorEmail   String?
+  action       String
+  entityType   String
+  entityId     String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
 
+  @@index([restaurantId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+model Subscription {
+  id               String             @id @default(cuid())
+  restaurantId     String             @unique
+  restaurant       Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  invoices         Invoice[]
+  planName         String
+  status           SubscriptionStatus  @default(trial)
+  interval         BillingInterval     @default(monthly)
+  price            Float
+  trialEndsAt      DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd  DateTime?
+  nextBillingAt    DateTime?
+  autoRenew        Boolean             @default(true)
+  notes            String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([status])
+  @@index([nextBillingAt])
+}
+
+model Invoice {
+  id             String         @id @default(cuid())
+  restaurantId   String
+  restaurant     Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  subscriptionId String?
+  subscription   Subscription?  @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  reference      String         @unique
+  amount         Float
+  status         InvoiceStatus   @default(pending)
+  dueDate        DateTime
+  paidAt         DateTime?
+  method         String?
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([restaurantId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model Category {
+  id           String     @id @default(cuid())
+  name         String
+  position     Int        @default(0)
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  products     Product[]
+  createdAt    DateTime   @default(now())
+
+  @@index([restaurantId])
+}
+
+model Product {
+  id           String     @id @default(cuid())
+  name         String
+  description  String?
+  price        Float
+  image        String?
+  active       Boolean    @default(true)
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  categoryId   String?
+  category     Category?  @relation(fields: [categoryId], references: [id])
+  orderItems   OrderItem[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([restaurantId])
+}
+
+model Table {
+  id           String     @id @default(cuid())
+  number       Int
+  qrCode       String
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orders       Order[]
+  createdAt    DateTime   @default(now())
+
+  @@unique([restaurantId, number])
+  @@index([restaurantId])
+}
+
+enum OrderStatus {
+  pending
+  preparing
+  ready
+  delivered
+  cancelled
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  status       OrderStatus @default(pending)
+  total        Float
+  restaurantId String
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  tableId      String
+  table        Table       @relation(fields: [tableId], references: [id])
+  items        OrderItem[]
   createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([restaurantId])
+  @@index([status])
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  quantity  Int
+  notes     String?
+  price     Float
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
 }

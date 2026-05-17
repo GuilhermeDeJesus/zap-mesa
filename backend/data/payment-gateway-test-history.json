@@ -1,0 +1,20 @@
+[
+  {
+    "id": "hist_1779038690090_iyhpkfyo",
+    "createdAt": "2026-05-17T17:24:50.090Z",
+    "type": "connection_test",
+    "gateway": "mercadopago",
+    "ok": true,
+    "message": "Conexão com Mercado Pago validada com sucesso",
+    "actorEmail": "admin@zapmesa.com"
+  },
+  {
+    "id": "hist_1779038688870_6rmy96yo",
+    "createdAt": "2026-05-17T17:24:48.870Z",
+    "type": "connection_test",
+    "gateway": "openpix",
+    "ok": true,
+    "message": "Conexão com OpenPix validada com sucesso",
+    "actorEmail": "admin@zapmesa.com"
+  }
+]

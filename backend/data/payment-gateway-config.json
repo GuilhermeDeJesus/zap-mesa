@@ -1,0 +1,13 @@
+{
+  "openpix": {
+    "appId": "Q2xpZW50X0lkX2FkZWM4NmQ0LTJiMDItNGI0Yy04MmFkLTg2MmFkMGRhNTBiYTpDbGllbnRfU2VjcmV0XzBlUmc3V01FS0N4NHVqNkRjc2RVVk55N1A2VkxvbDcrRkxVR0tuUUkxYms9",
+    "baseUrl": "https://api.openpix.com.br",
+    "chargePath": "/api/v1/charge"
+  },
+  "mercadopago": {
+    "clientId": "8671933468617290",
+    "clientSecret": "V1n5rpBdyaeCOTCunPb8wjGK4rcVAnZp",
+    "baseUrl": "https://api.mercadopago.com"
+  },
+  "updatedAt": "2026-05-17T14:54:20.059Z"
+}

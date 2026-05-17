@@ -8,6 +8,8 @@ RUN npm install
 
 COPY . .
 
+RUN npx prisma generate && npm run build
+
 EXPOSE 3333
 
-CMD ["npm", "run", "dev"]
+CMD ["node", "dist/server.js"]
