@@ -665,8 +665,8 @@ platformRoutes.get("/analytics", async (req, res) => {
       .filter((restaurant) => restaurant.reasons.length > 0)
       .sort((a, b) => {
         const severityWeight = { high: 0, medium: 1, low: 2 } as const;
-        if (severityWeight[a.severity] !== severityWeight[b.severity]) {
-          return severityWeight[a.severity] - severityWeight[b.severity];
+        if (severityWeight[a.severity as keyof typeof severityWeight] !== severityWeight[b.severity as keyof typeof severityWeight]) {
+          return severityWeight[a.severity as keyof typeof severityWeight] - severityWeight[b.severity as keyof typeof severityWeight];
         }
         return b.openAmount - a.openAmount;
       })
@@ -858,13 +858,15 @@ platformRoutes.get("/reports/financial", async (req, res) => {
         },
       }),
     ]);
+              planName: true,
+              nextBillingAt: true,
+            },
+          },
+        },
+      }),
+    ]);
 
-    const orderRevenueMap = new Map<string, { orderRevenue: number; orders: number }>();
-    for (const row of orderRevenueByRestaurant) {
-      orderRevenueMap.set(row.restaurantId, {
-        orderRevenue: row._sum.total || 0,
-        orders: row._count._all,
-      });
+    const orderRevenueMap
     }
 
     const paidInvoiceMap = new Map<string, { paidInvoiceRevenue: number; paidInvoices: number }>();
@@ -1565,7 +1567,7 @@ platformRoutes.get("/control-tower", async (_req, res) => {
             name: "Plataforma",
             slug: "platform",
             restaurantId: "",
-            severity: (revenueChangePercent <= -25 ? "high" : "medium") as const,
+            severity: (revenueChangePercent <= -25 ? "high" : "medium") as "high" | "medium",
             category: "financial" as const,
             title: "Queda de receita detectada",
             reason: `Receita dos últimos 30 dias caiu ${Math.abs(Math.round(revenueChangePercent))}% vs. os 30 dias anteriores`,
