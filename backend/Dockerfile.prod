@@ -23,6 +23,8 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/src/prisma ./src/prisma
 COPY --from=build /app/prisma.config.ts ./prisma.config.ts
 
+RUN npx prisma generate --schema src/prisma/schema.prisma
+
 EXPOSE 3333
 
 CMD ["node", "dist/server.js"]
