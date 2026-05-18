@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -37,9 +37,9 @@ model Restaurant {
   name      String
   slug      String   @unique
   phone     String?
-  logoUrl   String?
-  coverUrl  String?
-  description String?
+  logoUrl   String?   @db.Text
+  coverUrl  String?   @db.Text
+  description String? @db.Text
   instagram String?
   whatsapp  String?
   facebook  String?
@@ -77,7 +77,7 @@ model AuditLog {
   action       String
   entityType   String
   entityId     String?
-  metadata     Json?
+  metadata     Json?    @db.Json
   createdAt    DateTime @default(now())
 
   @@index([restaurantId])
@@ -100,7 +100,7 @@ model Subscription {
   currentPeriodEnd  DateTime?
   nextBillingAt    DateTime?
   autoRenew        Boolean             @default(true)
-  notes            String?
+  notes            String?             @db.Text
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
 
@@ -120,7 +120,7 @@ model Invoice {
   dueDate        DateTime
   paidAt         DateTime?
   method         String?
-  notes          String?
+  notes          String?        @db.Text
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -144,9 +144,9 @@ model Category {
 model Product {
   id           String     @id @default(cuid())
   name         String
-  description  String?
+  description  String?  @db.Text
   price        Float
-  image        String?
+  image        String?  @db.Text
   active       Boolean    @default(true)
   restaurantId String
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
@@ -162,7 +162,7 @@ model Product {
 model Table {
   id           String     @id @default(cuid())
   number       Int
-  qrCode       String
+  qrCode       String   @db.LongText
   restaurantId String
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orders       Order[]
@@ -199,7 +199,7 @@ model Order {
 model OrderItem {
   id        String   @id @default(cuid())
   quantity  Int
-  notes     String?
+  notes     String?  @db.Text
   price     Float
   orderId   String
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)

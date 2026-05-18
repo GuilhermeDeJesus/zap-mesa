@@ -1,0 +1,74 @@
+# docker-compose para deploy no cPanel (sem postgres, sem nginx).
+# O Apache do cPanel atua como reverse proxy na porta 80/443.
+# O banco de dados é o MySQL/MariaDB do cPanel (acessado via host-gateway).
+#
+# Uso:
+#   docker compose -f docker-compose.cpanel.yml up -d --build
+#   docker compose -f docker-compose.cpanel.yml --profile tools up migrate
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: zap-mesa-backend
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3333
+      APP_URL: ${APP_URL}
+      PUBLIC_API_URL: ${PUBLIC_API_URL}
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:3333:3333"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: zap-mesa-migrate
+    profiles: ["tools"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET:-placeholder}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: ["npx", "prisma", "db", "push", "--schema", "src/prisma/schema.prisma"]
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        NEXT_PUBLIC_API_URL: /api
+    container_name: zap-mesa-frontend
+    restart: always
+    environment:
+      NODE_ENV: production
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - backend
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
