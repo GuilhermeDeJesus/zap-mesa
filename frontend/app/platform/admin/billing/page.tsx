@@ -141,7 +141,7 @@ export default function PlatformBillingPage() {
   const [runningAutomation, setRunningAutomation] = useState(false);
   const [loadingAutomation, setLoadingAutomation] = useState(false);
   const [reprocessingCompetence, setReprocessingCompetence] = useState(false);
-  const [healthAlerts, setHealthAlerts] = useState<PlatformAnalyticsResponse["health"]["healthAlerts"]>([]);
+  const [healthAlerts, setHealthAlerts] = useState<NonNullable<PlatformAnalyticsResponse["health"]>["healthAlerts"]>([]);
   const [competenceReference, setCompetenceReference] = useState(() => {
     const now = new Date();
     const year = now.getFullYear();

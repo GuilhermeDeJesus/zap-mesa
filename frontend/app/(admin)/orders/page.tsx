@@ -10,6 +10,7 @@ import {
   type Order,
   type OrderStatus,
 } from "../../../types";
+import { formatBRL } from "../../../utils/formatBRL";
 
 const NEXT_STATUS: Record<OrderStatus, OrderStatus[]> = {
   pending: ["preparing", "cancelled"],

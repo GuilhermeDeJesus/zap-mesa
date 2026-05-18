@@ -96,8 +96,6 @@ type FinancialReportResponse = {
     count: number;
     amount: number;
   }>;
-};
-
   retentionCuts: Array<{
     key: string;
     label: string;
@@ -106,6 +104,18 @@ type FinancialReportResponse = {
     retentionRate: number;
     revenue: number;
   }>;
+  planBreakdown: Array<{
+    planName: string;
+    count: number;
+    mrr: number;
+  }>;
+  paymentMethodBreakdown: Array<{
+    method: string;
+    count: number;
+    amount: number;
+  }>;
+};
+
 function formatDateInput(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
