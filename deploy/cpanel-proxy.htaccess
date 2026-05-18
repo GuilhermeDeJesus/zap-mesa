@@ -16,10 +16,10 @@ RewriteRule ^api/(.*)$ http://127.0.0.1:3333/$1 [P,L]
 ProxyPassReverse /api/ http://127.0.0.1:3333/
 
 # ── Next.js static assets (cache longo) ───────────────────────────────
-RewriteRule ^_next/static/(.*)$ http://127.0.0.1:3000/_next/static/$1 [P,L]
+RewriteRule ^_next/static/(.*)$ http://127.0.0.1:3001/_next/static/$1 [P,L]
 
 # ── Tudo o mais → frontend Next.js (porta 3000) ───────────────────────
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ http://127.0.0.1:3000/$1 [P,L]
-ProxyPassReverse / http://127.0.0.1:3000/
+RewriteRule ^(.*)$ http://127.0.0.1:3001/$1 [P,L]
+ProxyPassReverse / http://127.0.0.1:3001/
