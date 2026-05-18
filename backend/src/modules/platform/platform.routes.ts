@@ -853,20 +853,20 @@ platformRoutes.get("/reports/financial", async (req, res) => {
             select: {
               status: true,
               price: true,
-            },
-          },
-        },
-      }),
-    ]);
-              planName: true,
               nextBillingAt: true,
+              planName: true,
             },
           },
         },
       }),
     ]);
 
-    const orderRevenueMap
+    const orderRevenueMap = new Map<string, { orderRevenue: number; orders: number }>();
+    for (const row of orderRevenueByRestaurant) {
+      orderRevenueMap.set(row.restaurantId, {
+        orderRevenue: row._sum.total || 0,
+        orders: row._count._all,
+      });
     }
 
     const paidInvoiceMap = new Map<string, { paidInvoiceRevenue: number; paidInvoices: number }>();
@@ -989,7 +989,7 @@ platformRoutes.get("/reports/financial", async (req, res) => {
       const nextBillingAt = restaurant.subscription?.nextBillingAt;
       return (
         (status === "active" || status === "trial") &&
-        nextBillingAt !== null &&
+        nextBillingAt != null &&
         nextBillingAt >= startDate &&
         nextBillingAt <= forecastWindowEnd
       );
@@ -1092,7 +1092,7 @@ platformRoutes.get("/reports/financial", async (req, res) => {
         const status = restaurant.subscription?.status;
         if (
           (status === "active" || status === "trial") &&
-          nextBillingAt !== null &&
+          nextBillingAt != null &&
           nextBillingAt >= weekStart &&
           nextBillingAt <= weekEnd
         ) {
@@ -1219,7 +1219,7 @@ platformRoutes.get("/reports/financial", async (req, res) => {
         const status = restaurant.subscription?.status;
         if (
           (status === "active" || status === "trial") &&
-          nextBillingAt !== null &&
+          nextBillingAt != null &&
           nextBillingAt >= startDate &&
           nextBillingAt <= horizonEnd
         ) {
