@@ -4,13 +4,13 @@ Este arquivo concentra os principais links e credenciais de desenvolvimento loca
 
 ## URLs do sistema
 
-- Frontend (principal): http://localhost:3000
-- Login: http://localhost:3000/login
-- Dashboard Super Admin: http://localhost:3000/platform/admin/dashboard
-- Restaurantes Super Admin: http://localhost:3000/platform/admin/restaurants
-- Mensalidades Super Admin: http://localhost:3000/platform/admin/billing
+- Frontend (principal): http://localhost:8080
+- Login: http://localhost:8080/login
+- Dashboard Super Admin: http://localhost:8080/platform/admin/dashboard
+- Restaurantes Super Admin: http://localhost:8080/platform/admin/restaurants
+- Mensalidades Super Admin: http://localhost:8080/platform/admin/billing
 - API Backend: http://localhost:3333
-- PostgreSQL (Docker): localhost:5432
+- MySQL (Docker): localhost:3306
 
 ## Usuários de teste
 

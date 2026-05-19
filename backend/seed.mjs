@@ -114,6 +114,7 @@ const IMG = {
 // ─── QUICO PRATO E PROSA ─────────────────────────────────────────────────────
 async function seedQuico() {
   console.log("\n🍖  Quico Prato e Prosa");
+  await register("Quico Prato e Prosa", "quico", "11988887777", "Guilherme", "guilherme@quico.com", "12345");
   const token = await login("guilherme@quico.com", "12345");
 
   // Limpar categorias existentes (serão recriadas)

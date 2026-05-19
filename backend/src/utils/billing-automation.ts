@@ -136,8 +136,31 @@ function parseCompetenceDate(reference: string): Date | null {
 async function withBillingAutomationLock<T>(
   handler: (tx: DbClient) => Promise<T>
 ): Promise<{ acquired: boolean; data?: T }> {
+  const datasourceUrl = (process.env.DATABASE_URL ?? "").toLowerCase();
+  const usesMySql = datasourceUrl.startsWith("mysql://") || datasourceUrl.startsWith("mysql2://");
+
   return prisma.$transaction(
     async (tx) => {
+      if (usesMySql) {
+        const lockName = `zapmesa_billing_${BILLING_LOCK_KEY_1}_${BILLING_LOCK_KEY_2}`;
+        const lockRows = await tx.$queryRaw<Array<{ locked: number | null }>>`
+          SELECT GET_LOCK(${lockName}, 0) AS locked
+        `;
+
+        if (lockRows[0]?.locked !== 1) {
+          return { acquired: false };
+        }
+
+        try {
+          const data = await handler(tx);
+          return { acquired: true, data };
+        } finally {
+          await tx.$queryRaw`
+            SELECT RELEASE_LOCK(${lockName})
+          `;
+        }
+      }
+
       const lockRows = await tx.$queryRaw<Array<{ locked: boolean }>>`
         SELECT pg_try_advisory_xact_lock(
           CAST(${BILLING_LOCK_KEY_1} AS int4),
