@@ -142,19 +142,35 @@ export default function OrdersPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {visible.map((order) => (
-          <OrderCard key={order.id} order={order} onStatusChange={handleStatusChange} />
+          <OrderCard
+            key={order.id}
+            order={order}
+            onStatusChange={handleStatusChange}
+            restaurantName={restaurant?.name}
+          />
         ))}
       </div>
     </div>
   );
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 function OrderCard({
   order,
   onStatusChange,
+  restaurantName,
 }: {
   order: Order;
   onStatusChange: (id: string, status: OrderStatus) => Promise<void>;
+  restaurantName?: string;
 }) {
   const [updating, setUpdating] = useState(false);
   const nextStatuses = NEXT_STATUS[order.status];
@@ -166,6 +182,151 @@ function OrderCard({
     } finally {
       setUpdating(false);
     }
+  }
+
+  function printOrder() {
+    const safeRestaurant = escapeHtml(restaurantName || "Restaurante");
+    const createdAt = new Date(order.createdAt);
+    const createdLabel = Number.isNaN(createdAt.getTime())
+      ? ""
+      : createdAt.toLocaleString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+    const safeCreatedLabel = escapeHtml(createdLabel);
+
+    const itemsHtml = order.items
+      .map((item) => {
+        const name = escapeHtml(item.product?.name ?? "Produto removido");
+        const qty = item.quantity;
+        const subtotal = escapeHtml(formatBRL(item.price * item.quantity));
+        const notes = item.notes?.trim()
+          ? `<div class="notes">Obs: ${escapeHtml(item.notes)}</div>`
+          : "";
+
+        return `<div class="item-row">
+          <div>
+            <div class="item-name">${qty}x ${name}</div>
+            ${notes}
+          </div>
+          <div class="item-price">${subtotal}</div>
+        </div>`;
+      })
+      .join("");
+
+    const printWindow = window.open("", "_blank", "width=420,height=720");
+    if (!printWindow) return;
+
+    printWindow.document.write(`<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Pedido ${escapeHtml(order.id.slice(-6).toUpperCase())}</title>
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 16px;
+        background: #fff;
+        color: #0f172a;
+        font-family: "Courier New", monospace;
+      }
+      .ticket {
+        width: 100%;
+        max-width: 360px;
+        margin: 0 auto;
+        border: 1px dashed #334155;
+        padding: 12px;
+      }
+      .restaurant {
+        text-align: center;
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .meta {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #334155;
+      }
+      .meta-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .divider {
+        border-top: 1px dashed #64748b;
+        margin: 10px 0;
+      }
+      .item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .item-name {
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .notes {
+        margin-top: 2px;
+        font-size: 11px;
+        color: #334155;
+      }
+      .item-price {
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .kitchen {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 12px;
+      }
+      @media print {
+        body { padding: 0; }
+        .ticket {
+          max-width: none;
+          width: 100%;
+          border: 1px dashed #000;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ticket">
+      <div class="restaurant">${safeRestaurant}</div>
+      <div class="meta">
+        <div class="meta-line"><span>Pedido</span><span>#${escapeHtml(order.id.slice(-6).toUpperCase())}</span></div>
+        <div class="meta-line"><span>Mesa</span><span>${escapeHtml(String(order.table?.number ?? "-"))}</span></div>
+        <div class="meta-line"><span>Status</span><span>${escapeHtml(ORDER_STATUS_LABEL[order.status])}</span></div>
+        ${safeCreatedLabel ? `<div class="meta-line"><span>Hora</span><span>${safeCreatedLabel}</span></div>` : ""}
+      </div>
+      <div class="divider"></div>
+      ${itemsHtml}
+      <div class="divider"></div>
+      <div class="total"><span>Total</span><span>${escapeHtml(formatBRL(order.total))}</span></div>
+      <div class="kitchen">Comanda para a cozinha</div>
+    </div>
+    <script>
+      window.addEventListener("load", () => {
+        window.print();
+      });
+    </script>
+  </body>
+</html>`);
+
+    printWindow.document.close();
   }
 
   return (
@@ -191,13 +352,21 @@ function OrderCard({
         ))}
       </div>
 
-      <div className="px-4 py-3 border-t flex items-center justify-between bg-slate-50/70">
+      <div className="px-4 py-3 border-t flex items-center justify-between bg-slate-50/70 gap-2">
         <span className="text-sm font-semibold text-slate-700">
           Total: {formatBRL(order.total)}
         </span>
-        <span className="text-xs text-slate-400">
-          #{order.id.slice(-6).toUpperCase()}
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={printOrder}
+            className="text-xs text-slate-600 hover:text-slate-800 font-medium"
+          >
+            Imprimir pedido
+          </button>
+          <span className="text-xs text-slate-400">
+            #{order.id.slice(-6).toUpperCase()}
+          </span>
+        </div>
       </div>
 
       {nextStatuses.length > 0 && (

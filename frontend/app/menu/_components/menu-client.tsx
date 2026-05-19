@@ -384,7 +384,7 @@ export function MenuClient({
           <span className="bg-white text-orange-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
             {cartCount}
           </span>
-          Ver carrinho · {formatBRL(cartTotal)}
+          Mandar pedido pra cozinha · {formatBRL(cartTotal)}
         </button>
       )}
 
@@ -470,7 +470,7 @@ function ProductCard({
   cartQty: number;
 }) {
   return (
-    <div className="group bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center gap-5 p-4 hover:shadow-md transition-shadow">
+    <div className="group bg-white rounded-2xl border border-slate-100 shadow-sm flex items-start gap-5 p-4 hover:shadow-md transition-shadow">
       {/* imagem grande, borda laranja, sombra, sem fundo sólido */}
       <div className="w-[112px] h-[112px] shrink-0 relative flex items-center justify-center">
         {product.image ? (
@@ -495,7 +495,11 @@ function ProductCard({
         <div>
           <p className="text-base font-bold text-gray-900 leading-snug line-clamp-2">{product.name}</p>
           {product.description && (
-            <p className="text-xs text-gray-500 mt-0.5 leading-relaxed line-clamp-2">{product.description}</p>
+            <div className="mt-2 rounded-xl border border-orange-100 bg-orange-50/70 px-3 py-2">
+              <p className="text-sm font-medium text-slate-700 leading-relaxed">
+                {product.description}
+              </p>
+            </div>
           )}
         </div>
         <div className="mt-3 flex items-center justify-between">
