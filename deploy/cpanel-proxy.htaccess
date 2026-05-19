@@ -1,25 +1,18 @@
-# Reverse proxy para cPanel/Apache
-# Coloque este arquivo em: /home/zapmesa/public_html/.htaccess
+# /home/zapmesa/public_html/.htaccess
 #
-# Requer mod_proxy, mod_proxy_http e mod_proxy_wstunnel habilitados (já confirmados).
-# O Docker expõe: backend em 127.0.0.1:3333, frontend em 127.0.0.1:3000.
+# NOTA: ProxyPass/ProxyPassReverse NÃO são permitidos em .htaccess no cPanel.
+# O proxy reverso fica em:
+#   /etc/apache2/conf.d/userdata/std/2_4/zapmesa/zapmesa.com.br/proxy.conf  (HTTP)
+#   /etc/apache2/conf.d/userdata/ssl/2_4/zapmesa/zapmesa.com.br/proxy.conf  (HTTPS)
+# Após editar os arquivos acima, rodar:
+#   /usr/local/cpanel/scripts/rebuildhttpdconf && systemctl reload httpd
 
 Options -MultiViews
 RewriteEngine On
 
-# ── WebSocket (Socket.IO) ──────────────────────────────────────────────
-RewriteCond %{HTTP:Upgrade} =websocket [NC]
-RewriteRule ^socket\.io/(.*) ws://127.0.0.1:3333/socket.io/$1 [P,L]
+# ACME challenge (Let's Encrypt / AutoSSL) - servir direto do filesystem
+RewriteRule ^\.well-known/ - [L]
 
-# ── API (remove prefixo /api → backend porta 3333) ────────────────────
-RewriteRule ^api/(.*)$ http://127.0.0.1:3333/$1 [P,L]
-ProxyPassReverse /api/ http://127.0.0.1:3333/
-
-# ── Next.js static assets (cache longo) ───────────────────────────────
-RewriteRule ^_next/static/(.*)$ http://127.0.0.1:3001/_next/static/$1 [P,L]
-
-# ── Tudo o mais → frontend Next.js (porta 3000) ───────────────────────
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ http://127.0.0.1:3001/$1 [P,L]
-ProxyPassReverse / http://127.0.0.1:3001/
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]

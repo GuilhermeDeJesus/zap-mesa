@@ -7,6 +7,181 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Restaurant {
+  id           String        @id @default(cuid())
+  name         String
+  slug         String        @unique
+  phone        String?
+  logoUrl      String?       @db.Text
+  coverUrl     String?       @db.Text
+  description  String?       @db.Text
+  instagram    String?
+  whatsapp     String?
+  facebook     String?
+  customDomain String?       @unique
+  createdAt    DateTime      @default(now())
+  auditLogs    AuditLog[]
+  categories   Category[]
+  invoices     Invoice[]
+  orders       Order[]
+  products     Product[]
+  subscription Subscription?
+  tables       Table[]
+  users        User[]
+}
+
+model User {
+  id           String      @id @default(cuid())
+  name         String
+  email        String      @unique
+  password     String
+  role         UserRole    @default(RESTAURANT_ADMIN)
+  restaurantId String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId], map: "User_restaurantId_fkey")
+}
+
+model AuditLog {
+  id           String     @id @default(cuid())
+  restaurantId String
+  actorId      String?
+  actorEmail   String?
+  action       String
+  entityType   String
+  entityId     String?
+  metadata     Json?
+  createdAt    DateTime   @default(now())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  restaurantId       String             @unique
+  planName           String
+  status             SubscriptionStatus @default(trial)
+  interval           BillingInterval    @default(monthly)
+  price              Float
+  trialEndsAt        DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  nextBillingAt      DateTime?
+  autoRenew          Boolean            @default(true)
+  notes              String?            @db.Text
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  invoices           Invoice[]
+  restaurant         Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([nextBillingAt])
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  restaurantId   String
+  subscriptionId String?
+  reference      String        @unique
+  amount         Float
+  status         InvoiceStatus @default(pending)
+  dueDate        DateTime
+  paidAt         DateTime?
+  method         String?
+  notes          String?       @db.Text
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  restaurant     Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@index([restaurantId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([subscriptionId], map: "Invoice_subscriptionId_fkey")
+}
+
+model Category {
+  id           String     @id @default(cuid())
+  name         String
+  position     Int        @default(0)
+  restaurantId String
+  createdAt    DateTime   @default(now())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  products     Product[]
+
+  @@index([restaurantId])
+}
+
+model Product {
+  id           String      @id @default(cuid())
+  name         String
+  description  String?     @db.Text
+  price        Float
+  image        String?     @db.Text
+  active       Boolean     @default(true)
+  restaurantId String
+  categoryId   String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  orderItems   OrderItem[]
+  category     Category?   @relation(fields: [categoryId], references: [id])
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId])
+  @@index([categoryId], map: "Product_categoryId_fkey")
+}
+
+model Table {
+  id           String     @id @default(cuid())
+  number       Int
+  qrCode       String     @db.LongText
+  restaurantId String
+  createdAt    DateTime   @default(now())
+  orders       Order[]
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, number])
+  @@index([restaurantId])
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  status       OrderStatus @default(pending)
+  total        Float
+  restaurantId String
+  tableId      String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table        Table       @relation(fields: [tableId], references: [id])
+  items        OrderItem[]
+
+  @@index([restaurantId])
+  @@index([status])
+  @@index([tableId], map: "Order_tableId_fkey")
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  quantity  Int
+  notes     String?  @db.Text
+  price     Float
+  orderId   String
+  productId String
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@index([orderId], map: "OrderItem_orderId_fkey")
+  @@index([productId], map: "OrderItem_productId_fkey")
+}
+
 enum UserRole {
   PLATFORM_OWNER
   RESTAURANT_ADMIN
@@ -32,178 +207,10 @@ enum BillingInterval {
   monthly
 }
 
-model Restaurant {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  phone     String?
-  logoUrl   String?   @db.Text
-  coverUrl  String?   @db.Text
-  description String? @db.Text
-  instagram String?
-  whatsapp  String?
-  facebook  String?
-  customDomain String? @unique
-  createdAt DateTime @default(now())
-
-  users      User[]
-  auditLogs  AuditLog[]
-  subscription Subscription?
-  invoices   Invoice[]
-  categories Category[]
-  products   Product[]
-  tables     Table[]
-  orders     Order[]
-}
-
-model User {
-  id           String     @id @default(cuid())
-  name         String
-  email        String     @unique
-  password     String
-  role         UserRole   @default(RESTAURANT_ADMIN)
-  restaurantId String?
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-}
-
-model AuditLog {
-  id           String   @id @default(cuid())
-  restaurantId String
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  actorId      String?
-  actorEmail   String?
-  action       String
-  entityType   String
-  entityId     String?
-  metadata     Json?    @db.Json
-  createdAt    DateTime @default(now())
-
-  @@index([restaurantId])
-  @@index([action])
-  @@index([entityType])
-  @@index([createdAt])
-}
-
-model Subscription {
-  id               String             @id @default(cuid())
-  restaurantId     String             @unique
-  restaurant       Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  invoices         Invoice[]
-  planName         String
-  status           SubscriptionStatus  @default(trial)
-  interval         BillingInterval     @default(monthly)
-  price            Float
-  trialEndsAt      DateTime?
-  currentPeriodStart DateTime?
-  currentPeriodEnd  DateTime?
-  nextBillingAt    DateTime?
-  autoRenew        Boolean             @default(true)
-  notes            String?             @db.Text
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-
-  @@index([status])
-  @@index([nextBillingAt])
-}
-
-model Invoice {
-  id             String         @id @default(cuid())
-  restaurantId   String
-  restaurant     Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  subscriptionId String?
-  subscription   Subscription?  @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
-  reference      String         @unique
-  amount         Float
-  status         InvoiceStatus   @default(pending)
-  dueDate        DateTime
-  paidAt         DateTime?
-  method         String?
-  notes          String?        @db.Text
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-
-  @@index([restaurantId])
-  @@index([status])
-  @@index([dueDate])
-}
-
-model Category {
-  id           String     @id @default(cuid())
-  name         String
-  position     Int        @default(0)
-  restaurantId String
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  products     Product[]
-  createdAt    DateTime   @default(now())
-
-  @@index([restaurantId])
-}
-
-model Product {
-  id           String     @id @default(cuid())
-  name         String
-  description  String?  @db.Text
-  price        Float
-  image        String?  @db.Text
-  active       Boolean    @default(true)
-  restaurantId String
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  categoryId   String?
-  category     Category?  @relation(fields: [categoryId], references: [id])
-  orderItems   OrderItem[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-
-  @@index([restaurantId])
-}
-
-model Table {
-  id           String     @id @default(cuid())
-  number       Int
-  qrCode       String   @db.LongText
-  restaurantId String
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  orders       Order[]
-  createdAt    DateTime   @default(now())
-
-  @@unique([restaurantId, number])
-  @@index([restaurantId])
-}
-
 enum OrderStatus {
   pending
   preparing
   ready
   delivered
   cancelled
-}
-
-model Order {
-  id           String      @id @default(cuid())
-  status       OrderStatus @default(pending)
-  total        Float
-  restaurantId String
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  tableId      String
-  table        Table       @relation(fields: [tableId], references: [id])
-  items        OrderItem[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-
-  @@index([restaurantId])
-  @@index([status])
-}
-
-model OrderItem {
-  id        String   @id @default(cuid())
-  quantity  Int
-  notes     String?  @db.Text
-  price     Float
-  orderId   String
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId String
-  product   Product  @relation(fields: [productId], references: [id])
-  createdAt DateTime @default(now())
 }

@@ -1,5 +1,62 @@
 [
   {
+    "id": "run_1779156038123_wq02vtw7",
+    "createdAt": "2026-05-19T02:00:38.123Z",
+    "finishedAt": "2026-05-19T02:00:38.130Z",
+    "trigger": "scheduler",
+    "ok": true,
+    "durationMs": 7,
+    "stats": {
+      "subscriptionsChecked": 1,
+      "invoicesCreated": 0,
+      "invoicesMarkedOverdue": 0,
+      "subscriptionsActivated": 0,
+      "subscriptionsPastDue": 0,
+      "skippedWithFutureBilling": 1,
+      "skippedWithoutNextBillingAt": 0,
+      "duplicateReferencesIgnored": 0
+    },
+    "message": "Execução de billing concluída com sucesso"
+  },
+  {
+    "id": "run_1779155982932_o35rzws0",
+    "createdAt": "2026-05-19T01:59:42.932Z",
+    "finishedAt": "2026-05-19T01:59:42.939Z",
+    "trigger": "scheduler",
+    "ok": true,
+    "durationMs": 7,
+    "stats": {
+      "subscriptionsChecked": 1,
+      "invoicesCreated": 0,
+      "invoicesMarkedOverdue": 0,
+      "subscriptionsActivated": 0,
+      "subscriptionsPastDue": 0,
+      "skippedWithFutureBilling": 1,
+      "skippedWithoutNextBillingAt": 0,
+      "duplicateReferencesIgnored": 0
+    },
+    "message": "Execução de billing concluída com sucesso"
+  },
+  {
+    "id": "run_1779155782173_kds9wf3m",
+    "createdAt": "2026-05-19T01:56:22.173Z",
+    "finishedAt": "2026-05-19T01:56:22.441Z",
+    "trigger": "scheduler",
+    "ok": true,
+    "durationMs": 268,
+    "stats": {
+      "subscriptionsChecked": 1,
+      "invoicesCreated": 0,
+      "invoicesMarkedOverdue": 0,
+      "subscriptionsActivated": 0,
+      "subscriptionsPastDue": 0,
+      "skippedWithFutureBilling": 1,
+      "skippedWithoutNextBillingAt": 0,
+      "duplicateReferencesIgnored": 0
+    },
+    "message": "Execução de billing concluída com sucesso"
+  },
+  {
     "id": "run_1779039926074_awarpyaz",
     "createdAt": "2026-05-17T17:45:26.074Z",
     "finishedAt": "2026-05-17T17:45:26.081Z",

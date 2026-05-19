@@ -32,7 +32,7 @@ down:
 
 seed:
 	@echo "Populando banco local com dados de seed..."
-	docker exec zap-mesa-backend npx tsx seed.ts
+	docker exec zap-mesa-backend node seed.mjs
 
 sync-db-from-prod:
 	@echo "Sincronizando banco remoto (ssh loterica) para local com backup..."
