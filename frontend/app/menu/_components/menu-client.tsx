@@ -228,7 +228,7 @@ export function MenuClient({
 
       {/* ── TOPO RICO CENTRALIZADO ────────────────────────────── */}
       <div className="relative w-full bg-slate-800">
-        <div className="h-44 md:h-56 w-full overflow-hidden">
+        <div className="h-32 sm:h-44 md:h-56 w-full overflow-hidden">
           {restaurant.coverUrl ? (
             <img
               src={restaurant.coverUrl}
@@ -246,7 +246,7 @@ export function MenuClient({
               <img
                 src={restaurant.logoUrl}
                 alt={restaurant.name}
-                className="w-16 h-16 md:w-20 md:h-20 rounded-2xl object-cover border-2 border-white shadow-xl shrink-0"
+                className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl object-cover border-2 border-white shadow-xl shrink-0"
               />
             )}
             <div className="min-w-0 flex-1">
@@ -258,7 +258,7 @@ export function MenuClient({
               )}
             </div>
             {/* Badge mesa — canto superior direito, mas dentro do container */}
-            <div className="absolute top-0 right-0 bg-black/40 backdrop-blur-sm text-white rounded-full px-3 py-1 text-xs font-semibold mt-3 mr-3">
+            <div className="absolute top-0 right-0 bg-black/40 backdrop-blur-sm text-white rounded-full px-2.5 py-1 text-xs font-semibold mt-2 mr-2 sm:mt-3 sm:mr-3">
               Mesa {tableNumber}
             </div>
           </div>
@@ -267,7 +267,7 @@ export function MenuClient({
 
       {/* ── BARRA DE INFO / REDES SOCIAIS CENTRALIZADA ────────── */}
       <div className="bg-white border-b border-slate-100 shadow-sm">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
+        <div className="max-w-3xl mx-auto px-2 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3 flex-wrap">
           {restaurant.phone && (
             <a
               href={`tel:${restaurant.phone}`}
@@ -319,10 +319,10 @@ export function MenuClient({
       {/* ── NAV DE CATEGORIAS STICKY ──────────────────────────── */}
       {activeCats.length > 0 && (
         <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
-          <div className="max-w-3xl mx-auto px-4">
+          <div className="max-w-3xl mx-auto px-2 sm:px-4">
             <div
               ref={navRef}
-              className="flex gap-1 overflow-x-auto no-scrollbar py-2"
+              className="flex gap-1 overflow-x-auto no-scrollbar py-1.5 sm:py-2"
               style={{ scrollbarWidth: "none" }}
             >
               {activeCats.map((cat) => (
@@ -330,7 +330,7 @@ export function MenuClient({
                   key={cat.id}
                   data-cat={cat.id}
                   onClick={() => scrollToCategory(cat.id)}
-                  className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold transition whitespace-nowrap ${
+                  className={`shrink-0 px-3 sm:px-4 py-1.5 rounded-full text-sm font-semibold transition whitespace-nowrap ${
                     activeCategory === cat.id
                       ? "bg-orange-500 text-white shadow-sm"
                       : "text-slate-600 hover:bg-orange-50 hover:text-orange-600"
@@ -345,7 +345,7 @@ export function MenuClient({
       )}
 
       {/* ── LISTA DE CATEGORIAS / PRODUTOS ───────────────────── */}
-      <div className="max-w-3xl mx-auto px-4 pt-6 space-y-10">
+      <div className="max-w-3xl mx-auto px-2 sm:px-4 pt-4 sm:pt-6 space-y-6 sm:space-y-10">
         {activeCats.map((cat) => {
           const activeProducts = (cat.products ?? []).filter((p) => p.active);
           if (activeProducts.length === 0) return null;
@@ -354,13 +354,13 @@ export function MenuClient({
               key={cat.id}
               ref={(el) => { categoryRefs.current[cat.id] = el; }}
             >
-              <div className="flex items-end justify-between mb-4">
-                <h2 className="text-xl font-black text-gray-900">{cat.name}</h2>
+              <div className="flex items-end justify-between mb-2 sm:mb-4">
+                <h2 className="text-lg sm:text-xl font-black text-gray-900">{cat.name}</h2>
                 <span className="text-xs text-gray-400">
                   {activeProducts.length} {activeProducts.length === 1 ? "item" : "itens"}
                 </span>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2 sm:gap-3 sm:grid-cols-2">
                 {activeProducts.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -379,20 +379,21 @@ export function MenuClient({
       {cartCount > 0 && !cartOpen && (
         <button
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-orange-500 text-white pl-4 pr-5 py-3 rounded-full shadow-xl flex items-center gap-3 text-sm font-semibold z-40 hover:bg-orange-600 transition"
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-orange-500 text-white pl-4 pr-5 py-3 rounded-full shadow-xl flex items-center gap-3 text-base font-semibold z-40 hover:bg-orange-600 transition active:scale-95"
+          style={{ minWidth: 220 }}
         >
-          <span className="bg-white text-orange-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+          <span className="bg-white text-orange-500 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
             {cartCount}
           </span>
-          Mandar pedido pra cozinha · {formatBRL(cartTotal)}
+          Mandar pedido · {formatBRL(cartTotal)}
         </button>
       )}
 
       {/* ── DRAWER CARRINHO ───────────────────────────────────── */}
       {cartOpen && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end justify-center">
-          <div className="bg-white w-full max-w-2xl rounded-t-3xl p-5 max-h-[82vh] overflow-y-auto shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white w-full max-w-2xl rounded-t-2xl sm:rounded-t-3xl p-4 sm:p-5 max-h-[82vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-orange-500 font-semibold">Carrinho</p>
                 <h2 className="text-lg font-black text-slate-900">Seu pedido</h2>
@@ -405,9 +406,9 @@ export function MenuClient({
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {cart.map((item) => (
-                <div key={item.product.id} className="border border-slate-100 rounded-2xl p-4 bg-slate-50/60">
+                <div key={item.product.id} className="border border-slate-100 rounded-2xl p-3 sm:p-4 bg-slate-50/60">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-slate-800">{item.product.name}</p>
@@ -420,11 +421,11 @@ export function MenuClient({
                       Remover
                     </button>
                   </div>
-                  <div className="flex items-center gap-3 mt-3">
-                    <div className="flex items-center gap-2 border border-slate-200 rounded-xl overflow-hidden bg-white">
-                      <button onClick={() => updateQty(item.product.id, -1)} className="px-3 py-2 text-slate-500 hover:bg-slate-100">−</button>
-                      <span className="text-sm px-1 font-semibold text-slate-700">{item.quantity}</span>
-                      <button onClick={() => updateQty(item.product.id, +1)} className="px-3 py-2 text-slate-500 hover:bg-slate-100">+</button>
+                  <div className="flex items-center gap-2 sm:gap-3 mt-2 sm:mt-3">
+                    <div className="flex items-center gap-1 border border-slate-200 rounded-xl overflow-hidden bg-white">
+                      <button onClick={() => updateQty(item.product.id, -1)} className="px-3 py-2 text-lg text-slate-500 hover:bg-slate-100">−</button>
+                      <span className="text-base px-2 font-semibold text-slate-700">{item.quantity}</span>
+                      <button onClick={() => updateQty(item.product.id, +1)} className="px-3 py-2 text-lg text-slate-500 hover:bg-slate-100">+</button>
                     </div>
                     <span className="text-sm text-slate-500 ml-auto font-medium">
                       {formatBRL(item.product.price * item.quantity)}
@@ -435,7 +436,7 @@ export function MenuClient({
                     value={item.notes}
                     onChange={(e) => updateNotes(item.product.id, e.target.value)}
                     placeholder="Observação (opcional)"
-                    className="mt-3 w-full text-xs border border-slate-200 rounded-xl px-3 py-2 text-slate-900 bg-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    className="mt-2 sm:mt-3 w-full text-xs border border-slate-200 rounded-xl px-3 py-2 text-slate-900 bg-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-300"
                   />
                 </div>
               ))}
@@ -470,9 +471,9 @@ function ProductCard({
   cartQty: number;
 }) {
   return (
-    <div className="group bg-white rounded-2xl border border-slate-100 shadow-sm flex items-start gap-5 p-4 hover:shadow-md transition-shadow">
+    <div className="group bg-white rounded-2xl border border-slate-100 shadow-sm flex items-start gap-3 sm:gap-5 p-3 sm:p-4 hover:shadow-md transition-shadow">
       {/* imagem grande, borda laranja, sombra, sem fundo sólido */}
-      <div className="w-[112px] h-[112px] shrink-0 relative flex items-center justify-center">
+      <div className="w-20 h-20 sm:w-[112px] sm:h-[112px] shrink-0 relative flex items-center justify-center">
         {product.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -481,7 +482,7 @@ function ProductCard({
             className="w-full h-full object-cover rounded-2xl border-4 border-orange-400 shadow-lg group-hover:scale-105 transition-transform duration-200"
           />
         ) : (
-          <div className="h-full w-full flex items-center justify-center text-4xl bg-orange-50 rounded-2xl border-4 border-orange-200">🍽️</div>
+          <div className="h-full w-full flex items-center justify-center text-2xl sm:text-4xl bg-orange-50 rounded-2xl border-4 border-orange-200">🍽️</div>
         )}
         {cartQty > 0 && (
           <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center shadow">
@@ -493,20 +494,22 @@ function ProductCard({
       {/* info */}
       <div className="flex-1 min-w-0 flex flex-col justify-between">
         <div>
-          <p className="text-base font-bold text-gray-900 leading-snug line-clamp-2">{product.name}</p>
+          <p className="text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2">{product.name}</p>
           {product.description && (
-            <div className="mt-2 rounded-xl border border-orange-100 bg-orange-50/70 px-3 py-2">
-              <p className="text-sm font-medium text-slate-700 leading-relaxed">
+            <div className="mt-1 sm:mt-2 rounded-xl border border-orange-100 bg-orange-50/70 px-2 sm:px-3 py-1.5 sm:py-2">
+              <p className="text-xs sm:text-sm font-medium text-slate-700 leading-relaxed">
                 {product.description}
               </p>
             </div>
           )}
         </div>
-        <div className="mt-3 flex items-center justify-between">
-          <p className="text-lg font-black text-orange-600">{formatBRL(product.price)}</p>
+        <div className="mt-2 sm:mt-3 flex items-center justify-between">
+          <p className="text-base sm:text-lg font-black text-orange-600">{formatBRL(product.price)}</p>
           <button
             onClick={() => onAdd(product)}
-            className="bg-orange-500 text-white text-lg w-10 h-10 rounded-full flex items-center justify-center hover:bg-orange-600 active:scale-95 transition shadow-sm"
+            className="bg-orange-500 text-white text-xl w-10 h-10 rounded-full flex items-center justify-center hover:bg-orange-600 active:scale-95 transition shadow-sm"
+            style={{ minWidth: 40, minHeight: 40 }}
+            aria-label="Adicionar ao carrinho"
           >
             +
           </button>
